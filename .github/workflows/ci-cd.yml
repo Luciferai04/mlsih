@@ -1,0 +1,100 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run backend tests
+      run: |
+        npm test
+        node test_advanced_features.js
+        node test_app_integration.js
+        node verify_all_features.js
+    
+    - name: Check ML service
+      run: node -e "require('./services/mlService.js')"
+
+  test-kerala-companion:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./kerela-travel-companion-app
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ./kerela-travel-companion-app/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build Next.js app
+      run: npm run build
+    
+    - name: Run type check
+      run: npx tsc --noEmit
+
+  deploy-preview:
+    needs: [test-backend, test-kerala-companion]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Vercel Preview
+      run: |
+        echo "Deploy preview URL will be available here"
+        # Add Vercel deployment steps here
+
+  deploy-production:
+    needs: [test-backend, test-kerala-companion]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Production
+      run: |
+        echo "🚀 Deploying to production..."
+        # Add production deployment steps here
+
+  check-security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+    
+    - name: Check for secrets
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
