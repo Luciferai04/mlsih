@@ -1,0 +1,28 @@
+runtime: nodejs18
+
+env_variables:
+  NODE_ENV: production
+  JWT_SECRET: your-production-jwt-secret
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+handlers:
+- url: /api/.*
+  script: auto
+  secure: always
+
+- url: /.*
+  static_dir: public
+  secure: always
+
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^(.*/)?tests/.*$
+- ^(.*/)?node_modules/(?!express|cors|helmet).*$
