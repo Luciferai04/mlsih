@@ -16,6 +16,7 @@ const locationRoutes = require('./src/routes/locations');
 const analyticsRoutes = require('./src/routes/analytics');
 const adminRoutes = require('./src/routes/admin');
 const referenceRoutes = require('./src/routes/reference');
+const keralaRoutes = require('./src/routes/kerala');
 const { setupSwagger } = require('./src/config/swagger');
 const { authenticateSocket } = require('./src/middleware/socketAuth');
 const { errorHandler } = require('./src/middleware/errorHandler');
@@ -78,6 +79,7 @@ app.use('/api/v1/trips', tripRoutes);
 app.use('/api/v1/locations', locationRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/kerala', keralaRoutes);
 app.use('/api/v1', referenceRoutes);
 
 // Swagger documentation

@@ -18,6 +18,7 @@ import MapView from './pages/MapView';
 import Reports from './pages/Reports';
 import Export from './pages/Export';
 import Settings from './pages/Settings';
+import KeralaManagement from './pages/KeralaManagement';
 
 // Context
 import { AuthProvider } from './context/AuthContext';
@@ -102,6 +103,7 @@ function App() {
                 <Route path="reports" element={<Reports />} />
                 <Route path="export" element={<Export />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="kerala" element={<KeralaManagement />} />
               </Route>
             </Routes>
           </Router>

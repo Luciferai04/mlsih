@@ -27,6 +27,11 @@ import TripDetailsScreen from '../screens/main/TripDetailsScreen';
 import TripTrackingScreen from '../screens/tracking/TripTrackingScreen';
 import TripReviewScreen from '../screens/tracking/TripReviewScreen';
 
+// Kerala Specific Features
+import WeatherAIScreen from '../screens/kerala/WeatherAIScreen';
+import SOSEmergencyScreen from '../screens/kerala/SOSEmergencyScreen';
+import LocalBusinessScreen from '../screens/kerala/LocalBusinessScreen';
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -168,6 +173,21 @@ const MainStack: React.FC = () => {
         name="Settings" 
         component={SettingsScreen} 
         options={{ title: 'Settings' }}
+      />
+      <Stack.Screen 
+        name="WeatherAI" 
+        component={WeatherAIScreen} 
+        options={{ title: 'Weather & AI Insights' }}
+      />
+      <Stack.Screen 
+        name="SOSEmergency" 
+        component={SOSEmergencyScreen} 
+        options={{ title: 'Emergency Services' }}
+      />
+      <Stack.Screen 
+        name="LocalBusiness" 
+        component={LocalBusinessScreen} 
+        options={{ title: 'Local Businesses' }}
       />
     </Stack.Navigator>
   );

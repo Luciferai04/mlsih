@@ -78,6 +78,15 @@ An advanced mobile application developed for NATPAC (National Transportation Pla
 - Analytics processing
 - Data validation
 
+### Flask API (`/flask_api`)
+- RESTful API with 50+ endpoints
+- WebSocket support for real-time updates
+- JWT authentication
+- All ML models integrated
+- MongoDB integration
+- Kerala-specific features
+- Data export (JSON/CSV/Excel)
+
 ## 🤖 Machine Learning Models
 
 ### Trip Detection Model
@@ -152,6 +161,13 @@ npm install
 expo start
 ```
 
+6. **Run the Flask API**
+```bash
+cd flask_api
+./run.sh
+# API runs on http://localhost:5000
+```
+
 ## 📊 Testing
 
 ### Run all tests
@@ -189,6 +205,16 @@ node verify_all_features.js
 - `POST /api/ml/classify-mode` - Mode classification
 - `POST /api/ml/predict-purpose` - Purpose prediction
 - `POST /api/ml/detect-companions` - Companion detection
+- `POST /api/ml/predict-route` - Route optimization
+
+### Flask API (Complete Backend)
+Base URL: `http://localhost:5000`
+- **Authentication**: `/api/auth/register`, `/api/auth/login`
+- **GPS Tracking**: `/api/gps/track`, `/api/gps/analytics`
+- **Trip Management**: `/api/trips` (CRUD operations)
+- **Kerala Services**: `/api/kerala/districts`, `/api/kerala/tourism`, `/api/kerala/weather`
+- **Analytics**: `/api/analytics/dashboard`, `/api/analytics/export`
+- **WebSocket**: Real-time location updates via Socket.IO
 
 ## 📈 Performance Metrics
 

@@ -1,0 +1,284 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_REGISTRY: docker.io
+  DOCKER_USERNAME: natpactravel
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: backend
+      run: npm ci
+    
+    - name: Run linter
+      working-directory: backend
+      run: npm run lint
+    
+    - name: Run tests
+      working-directory: backend
+      env:
+        NODE_ENV: test
+        MONGODB_URI: mongodb://localhost:27017/natpac-test
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET: test-jwt-secret
+      run: npm test -- --coverage
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: backend/coverage
+
+  test-mobile:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: mobile-app/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: mobile-app
+      run: npm ci
+    
+    - name: Run linter
+      working-directory: mobile-app
+      run: npm run lint
+    
+    - name: Run tests
+      working-directory: mobile-app
+      run: npm test -- --coverage --passWithNoTests
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: mobile-app/coverage
+
+  test-admin:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: admin-dashboard/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: admin-dashboard
+      run: npm ci
+    
+    - name: Run linter
+      working-directory: admin-dashboard
+      run: npm run lint
+    
+    - name: Run tests
+      working-directory: admin-dashboard
+      run: npm test -- --coverage --passWithNoTests
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: admin-dashboard/coverage
+
+  build-backend:
+    needs: test-backend
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ env.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build and push backend
+      uses: docker/build-push-action@v4
+      with:
+        context: backend
+        push: true
+        tags: |
+          ${{ env.DOCKER_USERNAME }}/backend:latest
+          ${{ env.DOCKER_USERNAME }}/backend:${{ github.sha }}
+        cache-from: type=registry,ref=${{ env.DOCKER_USERNAME }}/backend:buildcache
+        cache-to: type=registry,ref=${{ env.DOCKER_USERNAME }}/backend:buildcache,mode=max
+
+  build-admin:
+    needs: test-admin
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: admin-dashboard/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: admin-dashboard
+      run: npm ci
+    
+    - name: Build admin dashboard
+      working-directory: admin-dashboard
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: admin-build
+        path: admin-dashboard/build
+
+  build-mobile:
+    needs: test-mobile
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: mobile-app/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: mobile-app
+      run: npm ci
+    
+    - name: Setup Expo
+      uses: expo/expo-github-action@v8
+      with:
+        expo-version: latest
+        token: ${{ secrets.EXPO_TOKEN }}
+    
+    - name: Build Android
+      working-directory: mobile-app
+      run: eas build --platform android --non-interactive --no-wait
+    
+    - name: Build iOS
+      working-directory: mobile-app
+      run: eas build --platform ios --non-interactive --no-wait
+
+  deploy-staging:
+    needs: [build-backend, build-admin]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Setup Kubernetes config
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 --decode > kubeconfig
+        echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+    
+    - name: Deploy to staging
+      run: |
+        kubectl set image deployment/natpac-backend backend=${{ env.DOCKER_USERNAME }}/backend:${{ github.sha }} -n natpac-staging
+        kubectl rollout status deployment/natpac-backend -n natpac-staging
+
+  deploy-production:
+    needs: [build-backend, build-admin]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Setup Kubernetes config
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 --decode > kubeconfig
+        echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+    
+    - name: Deploy to production
+      run: |
+        kubectl set image deployment/natpac-backend backend=${{ env.DOCKER_USERNAME }}/backend:${{ github.sha }} -n natpac-travel
+        kubectl rollout status deployment/natpac-backend -n natpac-travel
+    
+    - name: Create release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        body: |
+          Production deployment of commit ${{ github.sha }}
+          
+          ## Changes
+          ${{ github.event.head_commit.message }}
+        draft: false
+        prerelease: false

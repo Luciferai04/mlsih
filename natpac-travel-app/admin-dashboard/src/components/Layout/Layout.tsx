@@ -31,6 +31,7 @@ import {
   Settings,
   Logout,
   Notifications,
+  Landscape,
 } from '@mui/icons-material';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -42,6 +43,7 @@ const menuItems = [
   { text: 'Trips', icon: <DirectionsBus />, path: '/trips' },
   { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
   { text: 'Map View', icon: <Map />, path: '/map' },
+  { text: 'Kerala Features', icon: <Landscape />, path: '/kerala' },
   { text: 'Reports', icon: <Description />, path: '/reports' },
   { text: 'Export Data', icon: <CloudDownload />, path: '/export' },
   { text: 'Settings', icon: <Settings />, path: '/settings' },
