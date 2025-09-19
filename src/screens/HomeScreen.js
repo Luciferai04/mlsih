@@ -59,7 +59,7 @@ const HomeScreen = () => {
         <Card.Content>
           <TripStatusIndicator isTracking={isTracking} />
           {isTracking && currentTrip && (
-            <TripTimer startTime={currentTriip.startTime} />
+            <TripTimer startTime={currentTrip.startTime} />
           )}
           {loading && (
             <View style={styles.loadingContainer}>

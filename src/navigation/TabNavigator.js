@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import HomeScreen from '../screens/HomeScreen';
+import HomeScreenEnhanced from '../screens/HomeScreenEnhanced';
 import TripHistoryScreen from '../screens/TripHistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
@@ -32,7 +32,7 @@ const TabNavigator = () => {
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={HomeScreenEnhanced} options={{ title: 'AI Trip Tracker' }} />
       <Tab.Screen name="History" component={TripHistoryScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

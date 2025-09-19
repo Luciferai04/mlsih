@@ -1,0 +1,26 @@
+{
+  "name": "natpac-travel-mobile",
+  "version": "1.0.0",
+  "description": "NATPAC Travel Data Collection Mobile App",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios", 
+    "start": "react-native start",
+    "test": "jest",
+    "lint": "eslint .",
+    "clean": "react-native clean-cache",
+    "build:android": "cd android && ./gradlew assembleRelease",
+    "build:ios": "xcodebuild -workspace ios/NatpacTravel.xcworkspace -scheme NatpacTravel -configuration Release -sdk iphoneos build"
+  },
+  "keywords": [
+    "natpac",
+    "travel",
+    "tracking",
+    "kerala",
+    "transportation"
+  ],
+  "author": "NATPAC - KSCSTE, Government of Kerala",
+  "license": "MIT"
+}
