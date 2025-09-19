@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import HomeScreenEnhanced from '../screens/HomeScreenEnhanced';
 import TripHistoryScreen from '../screens/TripHistoryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import GPSAnalyticsScreen from '../screens/GPSAnalyticsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,6 +35,7 @@ const TabNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeScreenEnhanced} options={{ title: 'AI Trip Tracker' }} />
       <Tab.Screen name="History" component={TripHistoryScreen} />
+      <Tab.Screen name="Analytics" component={GPSAnalyticsScreen} options={{ title: 'GPS Analytics' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
