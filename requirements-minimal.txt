@@ -1,0 +1,30 @@
+# Minimal Requirements for NATPAC Travel Survey App
+# Essential dependencies only for quick setup
+# =================================================
+
+# Core ML/AI
+tensorflow==2.13.0
+scikit-learn==1.3.0
+numpy==1.24.3
+pandas==2.0.3
+
+# GPS & Location
+geopy==2.3.0
+haversine==2.8.0
+folium==0.14.0
+
+# API Framework
+fastapi==0.100.0
+uvicorn==0.23.1
+
+# Database
+pymongo==4.4.1
+sqlalchemy==2.0.19
+
+# Kerala-specific
+indic-nlp-library==0.91
+
+# Utilities
+python-dotenv==1.0.0
+requests==2.31.0
+pydantic==2.0.3
